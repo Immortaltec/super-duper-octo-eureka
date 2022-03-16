@@ -1,0 +1,111 @@
+//首先:创建一个maven项目，并修改pom文件配置环境：
+//这里一开始由于联网未成功会爆红，无法成功导入，于是联接好网后右键选择maven继续reimport显示成功：
+一、pom.xmlMaven配置文件信息
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>Kyle01</groupId>
+    <artifactId>Hdfs_01</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>2.10.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-hdfs</artifactId>
+            <version>2.10.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-core</artifactId>
+            <version>2.10.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
+            <version>2.10.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-common</artifactId>
+            <version>2.10.0</version>
+        </dependency>
+    </dependencies>
+
+</project>
+
+二、Java类文件
+	import org.apache.hadoop.conf.Configuration;
+	import org.apache.hadoop.fs.*;
+	import org.apache.hadoop.io.IntWritable;
+	import org.apache.hadoop.io.Text;
+	import org.apache.hadoop.mapreduce.Job;
+	import org.apache.hadoop.mapreduce.Mapper;
+	import org.apache.hadoop.mapreduce.Reducer;
+	import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+	import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+	import java.io.IOException;
+	import java.util.StringTokenizer;
+	
+	public class WordCount {
+	    public static class MyMapper extends Mapper<Object, Text, Text, IntWritable>{
+	        private final static IntWritable one = new IntWritable(1);
+	        //创建一个IntWritable类的对象，初始化为1，用来将键值对的value初始化为1
+	        private Text word = new Text();//创建Text类的对象，用于处理文本
+	        public void map(Object key, Text value, Context context)
+	                throws IOException, InterruptedException {
+	            StringTokenizer itr = new StringTokenizer(value.toString());
+	            //构造一个用来解析value的对象，默认用空格分隔
+	            while (itr.hasMoreTokens()) {
+	                word.set(itr.nextToken());
+	                //将结果写入context
+	                context.write(word, one);
+	            }
+	        }
+	    }
+	    //自定义Reduce类，主要是在类中重载reduce函数。
+	    public static class MyReducer
+	            extends Reducer<Text,IntWritable,Text,IntWritable> {
+	        private IntWritable result = new IntWritable();
+	        //从这可以看出reduce处理的输入数据是<key, value-list>类型的键值对
+	        public void reduce(Text key, Iterable<IntWritable> values,Context context)
+	                throws IOException, InterruptedException {
+	            int sum = 0;
+	            //reduce函数就是对列表values中的数值进行相加
+	            for (IntWritable val : values) {
+	                sum += val.get();
+	            }
+	            result.set(sum);
+	            //将结果写入context
+	            context.write(key, result);
+	        }
+	    }
+	    /*
+	    1.WordCount的main函数。
+	    2.main函数主要创建一个job对象，然后对WordCount任务所需的map函数、reduce函数、输入文件路径、输出文件路径等信息进行配置。
+	    */
+	    public static void main(String[] args) throws Exception {
+	        Configuration conf = new Configuration();
+	        Job job = Job.getInstance(conf, "word count");//获取一个任务实例
+	        job.setJarByClass(WordCount.class);//设置工作类
+	        job.setMapperClass(MyMapper.class);//设置Mapper类
+	        job.setReducerClass(MyReducer.class);//设置Reducer类vim
+	        job.setOutputKeyClass(Text.class);//设置输出键值对中key的类型
+	        job.setOutputValueClass(IntWritable.class);//设置输出键值对中value的类型
+	        FileInputFormat.addInputPath(job, new Path(args[0]));//设置输入文件的路径
+	        FileOutputFormat.setOutputPath(job, new Path(args[1]));//设置输出文件的路径
+	        FileSystem fs=FileSystem.get(conf);//获取HDFS文件系统
+	        fs.delete(new Path(args[1]),true);//删除输出路径下可能已经存在的文件
+	        boolean result=job.waitForCompletion(true);//提交运行任务
+	        System.exit(result? 0: 1);//如result为 false则等待任务结束
+	    }
+	}
+  
+  
+  

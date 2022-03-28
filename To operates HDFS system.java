@@ -38,7 +38,7 @@ kyle@ubuntu:/usr/local/hadoop$
 */
 
 ##HDFS Web
-主机名+":"+50070(首先保证hdfs已启动start-dfs.sh;start-yarn.sh)
+主机名/localhost+":"+50070(attention:首先保证hdfs已启动start-dfs.sh;start-yarn.sh)
 
 ##HDFS API
 //使用JavaApi操作HDFS，使用的是MAVEN，操作的环境是Linux  
@@ -161,4 +161,11 @@ vim maven/conf/settings.xml
       <url>http://maven.aliyun.com/nexus/content/repositories/central/</url>
    </mirror>
 
-
+//log4j error solution
+//under 'resorce' menu ,creat log4j.propertise file,add thiese demo
+hadoop.root.logger=DEBUG, console
+log4j.rootLogger = DEBUG, console
+log4j.appender.console=org.apache.log4j.ConsoleAppender
+log4j.appender.console.target=System.out
+log4j.appender.console.layout=org.apache.log4j.PatternLayout
+log4j.appender.console.layout.ConversionPattern=%d{yy/MM/dd HH:mm:ss} %p %c{2}: %m%n

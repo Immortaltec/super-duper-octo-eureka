@@ -9,8 +9,13 @@ kyle@ubuntu:/usr/local/hadoop$ hdfs dfs -ls /
 Found 1 items
 drwxr-xr-x   - hadoop supergroup          0 202203-11 18:40 /user
 
+kyle@ubuntu:/usr/local/hadoop$ hadoop fs -ls /
+Found 1 items
+drwxr-xr-x   - hadoop supergroup          0 202203-11 18:40 /user
+
 （2）创建文件夹
 kyle@ubuntu:/usr/local/hadoop$ hdfs dfs -mkdir /dataset
+kyle@ubuntu:/usr/local/hadoop$ hadoop fs -mkdir /dataset
 kyle@ubuntu:/usr/local/hadoop$ hdfs dfs -ls /
 Found 2 items
 drwxr-xr-x   - hadoop supergroup          0 202203-11 22:32 /dataset
@@ -18,6 +23,7 @@ drwxr-xr-x   - hadoop supergroup          0 202203-11 18:40 /user
 
 （3）将本地文件上传至HDFS
 kyle@ubuntu:/usr/local/hadoop$ hdfs dfs -put /home/kyle/Documents/kyle01/zhaohaosen.txt /dataset
+kyle@ubuntu:/usr/local/hadoop$ hadoop fs -put /home/kyle/Documents/kyle01/zhaohaosen.txt /dataset
 kyle@ubuntu:/usr/local/hadoop$ hdfs dfs -ls /dataset
 Found 1 items
 -rw-r--r--   1 kyle supergroup          0 202203-11 22:37 /dataset/zhaohaosen.txt
